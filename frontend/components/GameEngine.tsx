@@ -14,6 +14,7 @@ import {
   PADDLE_AI_COLOR,
   BALL_COLOR
 } from '../constants';
+import { gameService } from '../services/gameService';
 
 interface GameEngineProps {
   setScreen: (screen: GameScreen) => void;
@@ -26,6 +27,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
   const [playerScore, setPlayerScore] = useState(0);
   const [aiScore, setAiScore] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [gameResult, setGameResult] = useState<'winner' | 'loser' | null>(null);
   
   // Game State Refs (Mutable for Performance Loop)
   const ballRef = useRef<Ball>({
@@ -101,42 +103,48 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
     };
   }, [targetScore]);
 
-  const saveScore = useCallback((pScore: number, aScore: number) => {
-    const newEntry: PlayerScore = {
-      name: "Player 1",
-      score: pScore,
-      opponentScore: aScore,
-      date: new Date().toISOString()
-    };
-    
-    const existing = localStorage.getItem('pingpong_scores');
-    let scores: PlayerScore[] = existing ? JSON.parse(existing) : [];
-    scores.push(newEntry);
-    localStorage.setItem('pingpong_scores', JSON.stringify(scores));
-  }, []);
+  const saveScore = useCallback(async (pScore: number, aScore: number) => {
+    try {
+      await gameService.saveGameResult({
+        player_name: "Player 1",
+        player_score: pScore,
+        cpu_score: aScore,
+        target_score: targetScore,
+      });
+    } catch (error) {
+      console.error('Failed to save game result:', error);
+    }
+  }, [targetScore]);
 
-  const handleGameOver = useCallback((winner: 'player' | 'ai') => {
+  const handleGameOver = useCallback((winner: 'player' | 'ai', finalPlayerScore: number, finalAiScore: number) => {
+    // Stop game immediately
     gameStateRef.current.isPlaying = false;
-    cancelAnimationFrame(requestRef.current!);
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      requestRef.current = undefined;
+    }
     
-    // Save Score
-    const finalPlayerScore = playerScore + (winner === 'player' ? 1 : 0);
-    const finalAiScore = aiScore + (winner === 'ai' ? 1 : 0);
+    // Stop ball movement immediately
+    ballRef.current.vel.x = 0;
+    ballRef.current.vel.y = 0;
+    
+    // Set game result (winner or loser) - this will stop updateGame and gameLoop
+    setGameResult(winner === 'player' ? 'winner' : 'loser');
     
     // Force final state update for UI
-    if (winner === 'player') setPlayerScore(finalPlayerScore);
-    else setAiScore(finalAiScore);
+    setPlayerScore(finalPlayerScore);
+    setAiScore(finalAiScore);
 
     saveScore(finalPlayerScore, finalAiScore);
 
     setTimeout(() => {
         setScreen(GameScreen.LEADERBOARD);
-    }, 2000);
+    }, 3000);
 
-  }, [playerScore, aiScore, saveScore, setScreen]);
+  }, [saveScore, setScreen]);
 
   const updateGame = useCallback(() => {
-    if (isPaused || !gameStateRef.current.isPlaying) return;
+    if (isPaused || !gameStateRef.current.isPlaying || gameResult !== null) return;
 
     const ball = ballRef.current;
     const player = playerPaddleRef.current;
@@ -215,9 +223,12 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
       const newScore = aiScore + 1;
       setAiScore(newScore);
       
-      // Check Win: Reach target AND lead by 2
-      if (newScore >= targetScore && newScore - playerScore >= 2) {
-        handleGameOver('ai');
+      // Check if total score equals targetScore
+      const totalScore = playerScore + newScore;
+      if (totalScore === targetScore) {
+        // Game ends when total score equals targetScore
+        const winner = newScore > playerScore ? 'ai' : 'player';
+        handleGameOver(winner, playerScore, newScore);
       } else {
         resetBall(playerScore, newScore); // Pass NEW scores for serve logic
       }
@@ -226,8 +237,12 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
       const newScore = playerScore + 1;
       setPlayerScore(newScore);
 
-      if (newScore >= targetScore && newScore - aiScore >= 2) {
-        handleGameOver('player');
+      // Check if total score equals targetScore
+      const totalScore = newScore + aiScore;
+      if (totalScore === targetScore) {
+        // Game ends when total score equals targetScore
+        const winner = newScore > aiScore ? 'player' : 'ai';
+        handleGameOver(winner, newScore, aiScore);
       } else {
         resetBall(newScore, aiScore); // Pass NEW scores for serve logic
       }
@@ -281,14 +296,18 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
   }, []);
 
   const gameLoop = useCallback(() => {
+    // Stop immediately if game is over
+    if (!gameStateRef.current.isPlaying || gameResult !== null) {
+      return;
+    }
     updateGame();
     draw();
     requestRef.current = requestAnimationFrame(gameLoop);
-  }, [updateGame, draw]);
+  }, [updateGame, draw, gameResult]);
 
   // Input Handling
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (isPaused) return;
+    if (isPaused || gameResult !== null || !gameStateRef.current.isPlaying) return;
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -380,6 +399,23 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                 <div className="bg-black/80 backdrop-blur-sm p-6 rounded-lg border-2 border-white shadow-2xl">
                     <div className="text-white font-arcade text-2xl tracking-widest text-center animate-pulse">PAUSED</div>
+                </div>
+             </div>
+        )}
+        
+        {/* Game Over Overlay */}
+        {gameResult && (
+             <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+                <div className="bg-black/90 backdrop-blur-sm p-8 rounded-lg border-4 shadow-2xl animate-pulse"
+                     style={{ borderColor: gameResult === 'winner' ? '#10b981' : '#ef4444' }}>
+                    <div className={`font-arcade text-4xl tracking-widest text-center ${
+                      gameResult === 'winner' ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {gameResult === 'winner' ? 'WINNER!' : 'LOSER!'}
+                    </div>
+                    <div className="text-white text-center mt-4 text-lg">
+                      {playerScore} - {aiScore}
+                    </div>
                 </div>
              </div>
         )}

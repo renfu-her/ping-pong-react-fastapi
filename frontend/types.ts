@@ -6,10 +6,13 @@ export enum GameScreen {
 }
 
 export interface PlayerScore {
+  id?: number;
   name: string;
   score: number;
   date: string;
   opponentScore: number;
+  winner?: 'player' | 'cpu';
+  target_score?: number;
 }
 
 export interface GameSettings {
