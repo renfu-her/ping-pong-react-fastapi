@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Ping Pong Pro",
+  "description": "A classic arcade-style Table Tennis game featuring smooth physics, service rules, and a local leaderboard.",
+  "requestFramePermissions": []
+}
