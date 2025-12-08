@@ -9,22 +9,34 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Run database migrations on startup
-try:
-    run_migrations()
-except Exception as e:
-    logger.error(f"Migration failed: {str(e)}")
-    # Fallback to create_all if migrations fail (for development)
-    from app.database.connection import engine, Base
-    logger.warning("Falling back to create_all for database tables")
-    Base.metadata.create_all(bind=engine)
-
 # Create FastAPI app
 app = FastAPI(
     title="Ping Pong Game API",
     description="API for Ping Pong Game Leaderboard",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Run database migrations on application startup"""
+    # Run database migrations on startup
+    # If migrations fail or are not set up, fall back to create_all
+    migration_success = False
+    try:
+        migration_success = run_migrations()
+    except Exception as e:
+        logger.error(f"Migration error: {str(e)}")
+        migration_success = False
+
+    # Fallback to create_all if migrations failed or not available
+    if not migration_success:
+        try:
+            from app.database.connection import engine, Base
+            logger.info("Using create_all for database tables (migrations not available)")
+            Base.metadata.create_all(bind=engine)
+        except Exception as e:
+            logger.error(f"Failed to create database tables: {str(e)}")
+            # Don't raise - let the app start anyway, database errors will be caught at runtime
 
 # Configure CORS
 app.add_middleware(
