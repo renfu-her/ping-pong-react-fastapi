@@ -1,7 +1,23 @@
 import os
+import logging
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+logger = logging.getLogger(__name__)
+
+# Get the backend directory (where .env file should be located)
+# This file is in app/config.py, so go up one level to backend/
+backend_dir = Path(__file__).parent.parent
+env_path = backend_dir / ".env"
+
+# Load .env file from backend directory
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path, override=True)
+    logger.info(f"Loaded .env file from: {env_path}")
+else:
+    logger.warning(f".env file not found at: {env_path}, using environment variables or defaults")
+    # Try to load from current directory as fallback
+    load_dotenv(override=True)
 
 class Settings:
     # Database settings
@@ -10,6 +26,10 @@ class Settings:
     DB_USER: str = os.getenv("DB_USER", "root")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
     DB_NAME: str = os.getenv("DB_NAME", "ping-pong-game")
+    
+    def __init__(self):
+        # Log database configuration (without password) for debugging
+        logger.info(f"Database configuration: host={self.DB_HOST}, port={self.DB_PORT}, user={self.DB_USER}, db={self.DB_NAME}")
     
     @property
     def DATABASE_URL(self) -> str:

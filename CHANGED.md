@@ -1,5 +1,25 @@
 # Change Log
 
+## 2025-12-08 14:42:42
+
+### Fixed .env File Loading Issue
+
+#### Backend Fix:
+- **app/config.py**: 
+  - Fixed `.env` file loading to use absolute path from backend directory
+  - Added explicit path resolution using `Path(__file__).parent.parent`
+  - Added logging to confirm .env file location and loading status
+  - Added fallback to load from current directory if .env not found at expected location
+  - Added database configuration logging (without password) for debugging
+
+#### Changes:
+- `.env` file is now loaded from `backend/.env` using absolute path
+- Logs will show where .env file was loaded from
+- Logs will show database configuration on startup (for debugging)
+- Prevents connection to wrong database due to .env not being loaded
+
+---
+
 ## 2025-12-08 14:40:02
 
 ### Fixed Gunicorn Worker Boot Failure
