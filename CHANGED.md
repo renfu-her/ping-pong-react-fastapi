@@ -1,5 +1,47 @@
 # Change Log
 
+## 2025-12-08 14:34:41
+
+### Added Automatic Database Migration System
+
+#### Backend Changes:
+- **pyproject.toml**: 
+  - Added `alembic>=1.13.0` dependency for database migrations
+- **alembic.ini**: 
+  - Created Alembic configuration file
+  - Configured to use database URL from settings
+- **alembic/env.py**: 
+  - Created Alembic environment configuration
+  - Automatically imports all models for migration detection
+  - Uses database URL from app settings
+- **alembic/script.py.mako**: 
+  - Created migration script template
+- **app/database/migrations.py**: 
+  - Created automatic migration utility
+  - `run_migrations()` function automatically runs migrations on startup
+  - `check_migrations()` function checks if migrations are needed
+- **app/main.py**: 
+  - Modified to run automatic migrations on application startup
+  - Falls back to `create_all()` if migrations fail (for development)
+- **app/models/__init__.py**: 
+  - Updated to import all models for Alembic detection
+
+#### Features:
+- Database migrations now run automatically when the application starts
+- No manual migration commands needed in production
+- Safe fallback to `create_all()` if migrations fail
+- All model changes are tracked through Alembic migrations
+
+#### Initial Setup:
+To initialize Alembic for the first time, run:
+```bash
+cd backend
+uv run alembic revision --autogenerate -m "Initial migration"
+uv run alembic upgrade head
+```
+
+---
+
 ## 2025-12-08 12:14:59
 
 ### Fixed Backend API Validator
