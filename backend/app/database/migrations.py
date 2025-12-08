@@ -16,7 +16,9 @@ def run_migrations():
     try:
         import os
         # Get Alembic configuration (alembic.ini is in the backend directory)
-        alembic_ini_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "alembic.ini")
+        # __file__ is in app/database/migrations.py, so we need to go up 2 levels to backend/
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        alembic_ini_path = os.path.join(backend_dir, "alembic.ini")
         alembic_cfg = Config(alembic_ini_path)
         
         # Set database URL from settings
@@ -40,7 +42,8 @@ def check_migrations():
     """Check if migrations are needed without running them"""
     try:
         import os
-        alembic_ini_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "alembic.ini")
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        alembic_ini_path = os.path.join(backend_dir, "alembic.ini")
         alembic_cfg = Config(alembic_ini_path)
         alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
         

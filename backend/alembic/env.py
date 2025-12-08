@@ -5,8 +5,9 @@ from alembic import context
 import os
 import sys
 
-# Add the parent directory to the path so we can import app
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# Add the parent directory (backend) to the path so we can import app
+backend_dir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, backend_dir)
 
 from app.database.connection import Base
 from app.config import settings
