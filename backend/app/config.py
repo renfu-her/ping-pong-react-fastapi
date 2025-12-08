@@ -16,6 +16,15 @@ env_path = backend_dir / ".env"
 if env_path.exists():
     load_dotenv(dotenv_path=env_path, override=True)
     print(f"[CONFIG] Loaded .env file from: {env_path}", file=sys.stderr)
+    # Debug: Print actual values from .env
+    db_host = os.getenv("DB_HOST", "NOT_SET")
+    db_port = os.getenv("DB_PORT", "NOT_SET")
+    db_user = os.getenv("DB_USER", "NOT_SET")
+    db_name = os.getenv("DB_NAME", "NOT_SET")
+    print(f"[CONFIG] DB_HOST from .env: {db_host}", file=sys.stderr)
+    print(f"[CONFIG] DB_PORT from .env: {db_port}", file=sys.stderr)
+    print(f"[CONFIG] DB_USER from .env: {db_user}", file=sys.stderr)
+    print(f"[CONFIG] DB_NAME from .env: {db_name}", file=sys.stderr)
     try:
         logger.info(f"Loaded .env file from: {env_path}")
     except:
