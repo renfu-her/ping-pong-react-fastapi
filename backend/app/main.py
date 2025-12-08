@@ -1,13 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+import os
+
+# Configure logging FIRST before importing anything that uses logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Now import settings after logging is configured
 from app.config import settings
 from app.controllers import game_controller
 from app.database.migrations import run_migrations
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
@@ -19,6 +25,9 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     """Run database migrations on application startup"""
+    # Log database configuration for debugging
+    logger.info(f"Database config - Host: {settings.DB_HOST}, Port: {settings.DB_PORT}, User: {settings.DB_USER}, DB: {settings.DB_NAME}")
+    
     # Run database migrations on startup
     # If migrations fail or are not set up, fall back to create_all
     migration_success = False

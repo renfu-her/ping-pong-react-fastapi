@@ -1,8 +1,10 @@
 import os
+import sys
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Get logger (may not be configured yet, so use print as fallback)
 logger = logging.getLogger(__name__)
 
 # Get the backend directory (where .env file should be located)
@@ -13,9 +15,17 @@ env_path = backend_dir / ".env"
 # Load .env file from backend directory
 if env_path.exists():
     load_dotenv(dotenv_path=env_path, override=True)
-    logger.info(f"Loaded .env file from: {env_path}")
+    print(f"[CONFIG] Loaded .env file from: {env_path}", file=sys.stderr)
+    try:
+        logger.info(f"Loaded .env file from: {env_path}")
+    except:
+        pass
 else:
-    logger.warning(f".env file not found at: {env_path}, using environment variables or defaults")
+    print(f"[CONFIG] WARNING: .env file not found at: {env_path}", file=sys.stderr)
+    try:
+        logger.warning(f".env file not found at: {env_path}, using environment variables or defaults")
+    except:
+        pass
     # Try to load from current directory as fallback
     load_dotenv(override=True)
 
