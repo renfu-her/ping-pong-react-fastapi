@@ -19,9 +19,10 @@ import { gameService } from '../services/gameService';
 interface GameEngineProps {
   setScreen: (screen: GameScreen) => void;
   targetScore: number;
+  playerName: string;
 }
 
-const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
+const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore, playerName }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>();
   const [playerScore, setPlayerScore] = useState(0);
@@ -106,7 +107,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
   const saveScore = useCallback(async (pScore: number, aScore: number) => {
     try {
       await gameService.saveGameResult({
-        player_name: "Player 1",
+        player_name: playerName || "Player 1",
         player_score: pScore,
         cpu_score: aScore,
         target_score: targetScore,
@@ -114,7 +115,7 @@ const GameEngine: React.FC<GameEngineProps> = ({ setScreen, targetScore }) => {
     } catch (error) {
       console.error('Failed to save game result:', error);
     }
-  }, [targetScore]);
+  }, [targetScore, playerName]);
 
   const handleGameOver = useCallback((winner: 'player' | 'ai', finalPlayerScore: number, finalAiScore: number) => {
     // Stop game immediately

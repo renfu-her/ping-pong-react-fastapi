@@ -9,7 +9,16 @@ router = APIRouter(prefix="/api/games", tags=["games"])
 
 @router.post("", response_model=GameResponse, status_code=201)
 def create_game(game_data: GameCreate, db: Session = Depends(get_db)):
-    """Create a new game result"""
+    """
+    Create a new game result
+    
+    - **player_name**: Player name (optional, defaults to "Player 1" if empty or not provided)
+    - **player_score**: Player's final score
+    - **cpu_score**: CPU's final score
+    - **target_score**: Target rounds for the game
+    
+    Player name will be automatically cleaned (trimmed, limited to 100 characters).
+    """
     try:
         game = GameService.create_game(db, game_data)
         return game

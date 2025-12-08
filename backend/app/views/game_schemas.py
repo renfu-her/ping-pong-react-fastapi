@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Literal
 
@@ -7,6 +7,26 @@ class GameCreate(BaseModel):
     player_score: int
     cpu_score: int
     target_score: int
+    
+    @field_validator('player_name', mode='before')
+    @classmethod
+    def validate_and_clean_player_name(cls, v: str) -> str:
+        """Validate and clean player name"""
+        if not isinstance(v, str):
+            return "Player 1"
+        
+        # Strip whitespace
+        cleaned = v.strip()
+        
+        # If empty after stripping, use default
+        if not cleaned:
+            return "Player 1"
+        
+        # Limit to 100 characters (database limit)
+        if len(cleaned) > 100:
+            cleaned = cleaned[:100]
+        
+        return cleaned
 
 class GameResponse(BaseModel):
     id: int

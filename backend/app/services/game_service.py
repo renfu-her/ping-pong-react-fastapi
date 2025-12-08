@@ -11,8 +11,17 @@ class GameService:
         # Determine winner based on scores
         winner = WinnerEnum.PLAYER if game_data.player_score > game_data.cpu_score else WinnerEnum.CPU
         
+        # Ensure player_name is not empty (should be handled by schema, but double-check)
+        player_name = game_data.player_name.strip() if game_data.player_name else "Player 1"
+        if not player_name:
+            player_name = "Player 1"
+        
+        # Ensure name doesn't exceed database limit
+        if len(player_name) > 100:
+            player_name = player_name[:100]
+        
         db_game = Game(
-            player_name=game_data.player_name,
+            player_name=player_name,
             player_score=game_data.player_score,
             cpu_score=game_data.cpu_score,
             winner=winner,

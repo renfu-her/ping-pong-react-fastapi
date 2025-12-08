@@ -5,9 +5,11 @@ interface MainMenuProps {
   setScreen: (screen: GameScreen) => void;
   setTargetScore: (score: number) => void;
   currentTargetScore: number;
+  playerName: string;
+  setPlayerName: (name: string) => void;
 }
 
-const MainMenu: React.FC<MainMenuProps> = ({ setScreen, setTargetScore, currentTargetScore }) => {
+const MainMenu: React.FC<MainMenuProps> = ({ setScreen, setTargetScore, currentTargetScore, playerName, setPlayerName }) => {
   
   const handleScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = parseInt(e.target.value);
@@ -21,6 +23,18 @@ const MainMenu: React.FC<MainMenuProps> = ({ setScreen, setTargetScore, currentT
      if (currentTargetScore < 5) setTargetScore(5);
   };
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPlayerName(e.target.value);
+  };
+
+  const handleStartGame = () => {
+    // Ensure player name is not empty
+    if (!playerName.trim()) {
+      setPlayerName('Player 1');
+    }
+    setScreen(GameScreen.PLAYING);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-full space-y-8 animate-fade-in select-none">
       <div className="text-center space-y-2">
@@ -32,29 +46,45 @@ const MainMenu: React.FC<MainMenuProps> = ({ setScreen, setTargetScore, currentT
         </h2>
       </div>
 
-      <div className="flex flex-col space-y-2 w-72">
-        <label className="text-gray-400 text-xs font-bold uppercase tracking-wider text-center">
-          Rounds to Win
-        </label>
-        <div className="relative">
-             <input 
-                type="number" 
-                min="5"
-                value={currentTargetScore}
-                onChange={handleScoreChange}
-                onBlur={handleBlur}
-                className="w-full bg-gray-900/50 text-white text-center font-arcade text-3xl py-4 rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
-             />
-             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600 text-[10px] font-bold tracking-wider">
-                 ROUNDS
-             </div>
+      <div className="flex flex-col space-y-4 w-72">
+        <div className="flex flex-col space-y-2">
+          <label className="text-gray-400 text-xs font-bold uppercase tracking-wider text-center">
+            Player Name
+          </label>
+          <input 
+            type="text" 
+            value={playerName}
+            onChange={handleNameChange}
+            placeholder="Enter your name"
+            maxLength={50}
+            className="w-full bg-gray-900/50 text-white text-center font-bold text-lg py-3 px-4 rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
+          />
         </div>
-        <p className="text-gray-600 text-[10px] text-center">Min: 5 Rounds | Max: None</p>
+
+        <div className="flex flex-col space-y-2">
+          <label className="text-gray-400 text-xs font-bold uppercase tracking-wider text-center">
+            Rounds to Win
+          </label>
+          <div className="relative">
+               <input 
+                  type="number" 
+                  min="5"
+                  value={currentTargetScore}
+                  onChange={handleScoreChange}
+                  onBlur={handleBlur}
+                  className="w-full bg-gray-900/50 text-white text-center font-arcade text-3xl py-4 rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
+               />
+               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600 text-[10px] font-bold tracking-wider">
+                   ROUNDS
+               </div>
+          </div>
+          <p className="text-gray-600 text-[10px] text-center">Min: 5 Rounds | Max: None</p>
+        </div>
       </div>
 
       <div className="flex flex-col space-y-4 w-64 pt-4">
         <button
-          onClick={() => setScreen(GameScreen.PLAYING)}
+          onClick={handleStartGame}
           className="group relative px-6 py-3 font-bold text-white bg-red-600 rounded-lg shadow-[0_4px_0_rgb(153,27,27)] active:shadow-[0_0px_0_rgb(153,27,27)] active:translate-y-1 transition-all hover:bg-red-500"
         >
           <span className="absolute inset-0 w-full h-full bg-white/20 group-hover:bg-white/30 rounded-lg transition-all" />

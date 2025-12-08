@@ -42,6 +42,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setScreen }) => {
             <thead className="text-gray-400 border-b border-gray-700">
               <tr>
                 <th className="py-2 pl-2">Rank</th>
+                <th className="py-2">Player</th>
                 <th className="py-2">Score</th>
                 <th className="py-2">Winner</th>
                 <th className="py-2 text-right pr-2">Date</th>
@@ -52,6 +53,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setScreen }) => {
                 <tr key={s.id || index} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                   <td className="py-3 pl-2 font-mono text-gray-300">
                     {index + 1}.
+                  </td>
+                  <td className="py-3 text-blue-300 font-bold text-xs">
+                    {s.name || 'Player 1'}
                   </td>
                   <td className="py-3 font-bold text-white">
                     <span className="text-green-400">{s.score}</span>

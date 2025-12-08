@@ -8,6 +8,8 @@ const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<GameScreen>(GameScreen.MENU);
   // Default to 11 points
   const [targetScore, setTargetScore] = useState<number>(11);
+  // Player name state
+  const [playerName, setPlayerName] = useState<string>('');
 
   return (
     <div className="w-full h-[100dvh] bg-neutral-900 flex flex-col items-center justify-center overflow-hidden">
@@ -20,12 +22,15 @@ const App: React.FC = () => {
                 setScreen={setCurrentScreen} 
                 setTargetScore={setTargetScore}
                 currentTargetScore={targetScore}
+                playerName={playerName}
+                setPlayerName={setPlayerName}
               />
             )}
             {currentScreen === GameScreen.PLAYING && (
               <GameEngine 
                 setScreen={setCurrentScreen} 
                 targetScore={targetScore}
+                playerName={playerName}
               />
             )}
             {currentScreen === GameScreen.LEADERBOARD && <Leaderboard setScreen={setCurrentScreen} />}
