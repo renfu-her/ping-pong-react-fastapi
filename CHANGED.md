@@ -1,5 +1,18 @@
 # Change Log
 
+## 2025-12-08 12:14:59
+
+### Fixed Backend API Validator
+
+#### Backend Fix:
+- **game_schemas.py**: 
+  - Fixed `field_validator` implementation to use correct Pydantic v2 syntax
+  - Removed `mode='before'` parameter (not needed in Pydantic v2)
+  - Validator now correctly cleans and validates player names
+  - Tested and confirmed working correctly
+
+---
+
 ## 2025-12-08 12:10:26
 
 ### Backend API Improvements for Player Name

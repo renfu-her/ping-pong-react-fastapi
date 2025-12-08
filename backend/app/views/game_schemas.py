@@ -8,7 +8,7 @@ class GameCreate(BaseModel):
     cpu_score: int
     target_score: int
     
-    @field_validator('player_name', mode='before')
+    @field_validator('player_name')
     @classmethod
     def validate_and_clean_player_name(cls, v: str) -> str:
         """Validate and clean player name"""
